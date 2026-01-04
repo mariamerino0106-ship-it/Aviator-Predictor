@@ -12,9 +12,8 @@ import {
 
 export const TWO_PWR_32 = 4294967296;
 
-/* SHA-2 constant table */
+/* SHA-2 constant table (frozen to avoid accidental mutation) */
 export const SHA2_K = (() => {
-  // Cloned list to prevent accidental mutations
   const table = [
     0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5,
     0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
@@ -33,20 +32,20 @@ export const SHA2_K = (() => {
     0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208,
     0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2
   ];
-  return table.slice();
+  return Object.freeze(table.slice());
 })();
 
-/* Initial values for truncated variants */
-export const H_trunc = [
+/* Initial values for truncated variants (frozen) */
+export const H_trunc = Object.freeze([
   0xc1059ed8, 0x367cd507, 0x3070dd17, 0xf70e5939,
   0xffc00b31, 0x68581511, 0x64f98fa7, 0xbefa4fa4
-];
+]);
 
-/* Initial values for full SHA-256/512 families */
-export const H_full = [
+/* Initial values for full SHA-256/512 families (frozen) */
+export const H_full = Object.freeze([
   0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a,
   0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19
-];
+]);
 
 export const sha_variant_error = "Chosen SHA variant is not supported";
 export const mac_rounds_error = "Cannot set numRounds with MAC";
@@ -65,7 +64,7 @@ export function packedLEConcat(a: packedValue, b: packedValue): packedValue {
   const leftShift = aBytes << 3;
   const rightShift = (4 - aBytes) << 3;
 
-  // Fast path: simple concat when byte alignment matches
+  // When `a` is not word-aligned (not a multiple of 4 bytes), we must merge words.
   if (aBytes % 4 !== 0) {
     for (i = 0; i < bBytes; i += 4) {
       arrOffset = (aBytes + i) >>> 2;
@@ -82,6 +81,7 @@ export function packedLEConcat(a: packedValue, b: packedValue): packedValue {
     return { value: a.value, binLen: a.binLen + b.binLen };
   }
 
+  // Simple concat when a is word-aligned
   return { value: a.value.concat(b.value), binLen: a.binLen + b.binLen };
 }
 
@@ -100,14 +100,15 @@ export function getOutputOpts(options?: {
   const user = options || {};
   const lenErr = "Output length must be a multiple of 8";
 
-  normalized.outputUpper = user.outputUpper || false;
+  // allow explicit false/empty values from user; check against undefined
+  if (user.outputUpper !== undefined) normalized.outputUpper = user.outputUpper as boolean;
 
-  if (user.b64Pad) normalized.b64Pad = user.b64Pad;
+  if (user.b64Pad !== undefined) normalized.b64Pad = user.b64Pad as string;
 
-  if (user.outputLen) {
+  if (user.outputLen !== undefined) {
     if (user.outputLen % 8 !== 0) throw new Error(lenErr);
     normalized.outputLen = user.outputLen;
-  } else if (user.shakeLen) {
+  } else if (user.shakeLen !== undefined) {
     if (user.shakeLen % 8 !== 0) throw new Error(lenErr);
     normalized.outputLen = user.shakeLen;
   }
@@ -138,7 +139,8 @@ export function parseInputOption(
     return fallback;
   }
 
-  if (value.value === undefined || !value.format) {
+  // Explicitly check for undefined format/value (safer for falsy values)
+  if (value.value === undefined || value.format === undefined) {
     throw new Error(err);
   }
 
@@ -202,7 +204,7 @@ export abstract class jsSHABase<StateT, VariantT> {
     this.numRounds = inputOpts.numRounds || 1;
 
     if (isNaN(this.numRounds) || this.numRounds !== parseInt(this.numRounds, 10) || this.numRounds < 1) {
-      throw new Error("numRounds must a integer >= 1");
+      throw new Error("numRounds must be an integer >= 1");
     }
 
     this.shaVariant = variant;
@@ -227,6 +229,7 @@ export abstract class jsSHABase<StateT, VariantT> {
     const chunk = converted.value;
     const chunkInts = totalBits >>> 5;
 
+    // Process full blocks only
     for (let i = 0; i < chunkInts; i += step) {
       if (consumed + this.variantBlockSize <= totalBits) {
         this.intermediateState = this.roundFunc(chunk.slice(i, i + step), this.intermediateState);
