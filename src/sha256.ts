@@ -34,6 +34,7 @@ function getNewState256(variant: VariantType): number[] {
   } else {
     /* "SHA-256" */
     retVal = H_full.slice();
+  
   }
   return retVal;
 }
